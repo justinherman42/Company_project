@@ -61,42 +61,51 @@ json_to_df <- function(tag)
 ### Function initalizes table creation in mysql
 ### takes stock tag(chracter), tablename(character),overwrite_table(numeric)
 ### Set overwrite table to 1 if you are comfortable overwriting existing table
-build_table <- function(tag,tablename,overwrite_table=0){
+build_table <- function(tags,tablename){
     
+    for (tag in tags){
+        skip_to_next <- FALSE
     ## import df from json api call function 
-    df <- json_to_df(tag)
+        df <- json_to_df(tag)
     
     ## grab credentials from credential file
-    db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
-    my_sql_db<-"xmedia"
-    
-    ## make connection
-    my_conn<-dbConnect(RMariaDB::MariaDB(),
-                       default.file=db_credentials,
-                       group=my_sql_db)
-    
-    ## Check if table already exists, warn user to rerun function with overwrite=1 to overwrite 
-    if (tablename %in% list(dbListTables(my_conn))){
-        if (overwrite_table ==0){
-        print("This table already exists, make sure you specify overwrite input to 1")
-        return (1)
+        db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
+        my_sql_db<-"xmedia"
+        
+        ## make connection
+        my_conn<-dbConnect(RMariaDB::MariaDB(),
+                           default.file=db_credentials,
+                           group=my_sql_db)
+        
+        ## Check if table already exists, warn user to rerun function with overwrite=1 to overwrite 
+        # if (tablename %in% list(dbListTables(my_conn))){
+        #     if (overwrite_table ==0){
+        #     print("This table already exists, make sure you specify overwrite input to 1")
+        #     return (1)
+        #     }
+        # }
+        
+        ## Build table from df
+         tryCatch(dbWriteTable(my_conn, value = df, 
+                              name = tablename,
+                              append = TRUE,                         
+                              row.names = FALSE),error= function(e){skip_to_next <<- TRUE})
+             if(skip_to_next) { print(paste("company",tag, "data already exists in DB"))
+                                gc()
+                                dbDisconnect(my_conn)
+                                next }
+        ## Set primary key to Companytag+Date
+        res <- dbSendQuery(my_conn, "ALTER TABLE New_table
+                                 ADD CONSTRAINT websites_pk
+                                 PRIMARY KEY (`primarykey`(40)) ;")
+        ## Disconnect
+        dbClearResult(res)
+        dbDisconnect(my_conn)
         }
-    }
-    
-    ## Build table from df
-    dbWriteTable(my_conn, value = df, 
-                 name = tablename, 
-                 overwrite = TRUE,                         
-                 row.names = FALSE)
-    
-    ## Set primary key to Companytag+Date
-    res <- dbSendQuery(my_conn, "ALTER TABLE New_table
-                             ADD CONSTRAINT websites_pk
-                             PRIMARY KEY (`primarykey`(40)) ;")
-    ## Disconnect
-    dbClearResult(res)
-    dbDisconnect(my_conn)
 }
+
+
+
 
 
 # dbListTables(mydb)
@@ -108,11 +117,81 @@ build_table <- function(tag,tablename,overwrite_table=0){
 # #if str(c(dbListTables(my_conn)))
 # build_table('MSFT','new_table',1)
 #list(dbListTables(my_conn))
+
+
+
+
+update_table <- function(tags,tablename){
+    for (tag in tags){
+        skip_to_next <- FALSE
+        
+        ## import df from json api call function 
+        df <- json_to_df(tag)
+        
+        ## grab credentials from credential file
+        db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
+        my_sql_db<-"xmedia"
+        
+        ## make connection
+        my_conn<-dbConnect(RMariaDB::MariaDB(),
+                           default.file=db_credentials,
+                           group=my_sql_db) 
+        
+        ##make sure data isn't duplicated by loading entire table into R DB(not big data solution)
+        ## Temporary solution, need better validation method especially for big data and need checks on 
+        
+        #table2df <- dbGetQuery(my_conn, "SELECT * FROM New_table")
+        #colnames(table2df) <- gsub("financials.","",colnames(table2df))
+        #stackeddf <- rbind(table2df, df)
+        #finaldf <- unique(stackeddf)
+    
+        
+        # OVERWRITE DESTINATION TABLE EACH TIME
+        tryCatch(dbWriteTable(my_conn, value = df, 
+                          name = "New_table", 
+                          append = TRUE,                         
+                          row.names = FALSE),error= function(e){skip_to_next <<- TRUE})
+         if(skip_to_next) { print(paste("company",tag, "data already exists in DB"))
+                            gc()
+                            dbDisconnect(my_conn)
+                            next }
+    
+        
+        
+        # res <- dbSendQuery(my_conn, "ALTER TABLE New_table
+        #                          ADD CONSTRAINT websites_pk
+        #                          PRIMARY KEY (`primarykey`(40)) ;")
+        # dbClearResult(res)
+        # rm(table2df, stackeddf, finaldf)
+        gc()
+        dbDisconnect(my_conn)
+        print(paste("db was updated correctly with: ",tag ))
+    }
+}
+
+
+
+build_table('WFC',"new_table")
+
+
+update_table(top_10_banks,"new_table")
+top_10_banks <- c('WFC', 'USB', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG","RF","AMZN")
 ```
 
 
 
 ```{r}
+df <- json_to_df("MSFT")
+tablename <- "New_table"
+# Begin the query
+sql_qry <- paste("INSERT IGNORE into",tablename,"(", paste(colnames(df),collapse=", " ),")", "VALUES")
+sql_qry
+
+unlist(colnames(df))
+paste(colnames(df), collapse= ", ")
+# Finish it with
+sql_qry <- paste0(sql_qry, paste(sprintf("('%s', '%s')", dd$Quarter, dd$Vendors), collapse = ","))
+
 
 ```
 
