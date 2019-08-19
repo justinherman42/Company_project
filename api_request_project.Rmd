@@ -140,8 +140,8 @@ build_table('USB',"new_table5")
 update_table(top_10_banks,"new_table5")
 ```
 
-
+## start windows function Query
 ```{r}
-##not updating
+
 ```
 
