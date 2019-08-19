@@ -7,8 +7,55 @@ output: html_document
 
 
 
+## Library import
+```{r,message=F,warning=FALSE}
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(tidyverse)
+library(RMariaDB)
+library(DT)
+library(knitr)
+library(kableExtra)
+```
 
+## functions 
 ```{r}
-
+### Function accesses financial data API and returns a dataframe ready to be inserted into SQL 
+### Function takes companies stock tag as an input string   
+json_to_df <- function(tag)
+    {
+    ## Build url
+    url <- paste("https://financialmodelingprep.com/api/v3/financials/income-statement/",tag,"?period=quarter",sep="")
+    headers = c('Upgrade-Insecure-Requests' = '1')
+    params = list(`datatype` = 'json')
+    
+    ## Make request
+    result <- GET(url = url, httr::add_headers(.headers=headers), query = params)
+    result<- rawToChar(result$content)
+    df <- as.data.frame(fromJSON(result)[2])
+    
+    ## Fix table column names- remove financials. and special char "."
+    colnames(df) <- gsub("financials.|\\.","",colnames(df))
+    
+    ## Convert Date to datetime/ rename date as reportdate
+    df$report_date <- as.Date(df$date, '%Y-%m-%d')
+    df <-  df %>%
+        select(-date)
+    
+    ## Build tag column to identify stock ticker
+    df$company <- tag
+    
+    ## Build primary key column convert financial data to numeric
+    df$primarykey <- paste(as.character(df$report_date),df$company,sep="-")
+    cols.num <- colnames(df)[1:31]
+    df[,cols.num] <- sapply(df[cols.num],as.numeric)
+    
+    ## Data check for NA-
+    table(is.na(df))
+    return(df)
+}
+## print workng example of microsoft df
+datatable(json_to_df("MSFT"))
 ```
 
