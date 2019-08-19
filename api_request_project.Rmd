@@ -136,12 +136,111 @@ update_table <- function(tags,tablename){
 
 top_10_banks <- c('WFC', 'USB', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG","RF")
 ## build a table in sql
-build_table('USB',"new_table5")
-update_table(top_10_banks,"new_table5")
+build_table('USB',"new_table")
+update_table(top_10_banks,"new_table")
 ```
 
 ## start windows function Query
+
++ Experiment with sql db
+
 ```{r}
+## practice some query with db
+db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
+my_sql_db<-"xmedia"
+my_conn<-dbConnect(RMariaDB::MariaDB(),
+                   default.file=db_credentials,
+                   group=my_sql_db) 
+
+## print out description of table
+print(dbGetQuery(my_conn, "Describe New_table;"))
+```
+
+
+```{r}
+## Check for NA values
+
+
+
+res <- dbGetQuery(my_conn, "select * from New_table;")
+table(is.na(res))
+
+## look at first 10 rows
+res <- dbGetQuery(my_conn, "select * from New_table limit 10;")
+datatable(res)
+gc()
+dbClearResult(res)
+dbDisconnect(my_conn)
+```
+
+
+** Build windows functions **
+
+We are looking at 10 of the largest publicly traded banks by cap size.  The data already has a YOY quarterly adjusted growth figure, but I would like to use windows functions to build that figure with our revenue data.  I functionize the code, so that we can run a query that prodcues YOY reswults for any of the numeric columns in the dataset
+
+```{r}
+
+### Uses Lag to build Year over year quarterly growth for desired columns
+yty_growth <- function(statistic,table_name){
+    my_conn<-dbConnect(RMariaDB::MariaDB(),
+                   default.file=db_credentials,
+                   group=my_sql_db) 
+       query <- paste("WITH last_year_debt  as (SELECT company,report_date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY company order by report_date)  last_year_",statistic," from ",table_name,") Select company,report_date,",statistic, ",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) as growth from last_year_debt;",sep="" )
+    #print(query)
+    res <- dbSendQuery(my_conn,query)
+    my_df <- dbFetch(res)
+    print(datatable(my_df))
+    dbClearResult(res)
+    dbDisconnect(my_conn)
+}
+
+yty_growth("Revenue","new_table")
+yty_growth("OperatingExpenses","new_table")
+
+
+### Uses dense rank to rank to first develop a growth percent by any col and then rank those growth rates
+### Function inputs are statistic, table name, partition set
+### if input partition is set to 1, then function will rank individual company performance
+### If partition is not set to 1, function will return ranks of the aggregate banking industry
+
+yty_growth_ranking <- function(statistic,table_name,partition=0){
+    ##Build connection
+    my_conn<-dbConnect(RMariaDB::MariaDB(),
+                   default.file=db_credentials,
+                   group=my_sql_db)
+    
+    ##Build query without partition
+    if (partition==0){
+    query <- paste("WITH last_year_debt  as (SELECT company,report_date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY company order by report_date) last_year_",statistic," from ",table_name," ),", statistic,"_table as (Select company,report_date,",statistic,",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) as growth from last_year_debt) select *, (case when growth is not null then dense_rank() OVER ( order by growth desc) end) as ranked_growth from ",statistic,"_table;",sep="")
+    
+    ## Send query request and display result
+    res <- dbSendQuery(my_conn,query)
+    my_df <- dbFetch(res)
+    print(datatable(my_df))
+    dbClearResult(res)
+    dbDisconnect(my_conn)
+    }
+    
+    ##Build query with partition
+    else {
+        query <- paste("WITH last_year_debt  as (SELECT company,report_date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY company order by report_date) last_year_",statistic," from ",table_name," ),", statistic,"_table as (Select company,report_date,",statistic,",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) as growth from last_year_debt) select *, (case when growth is not null then dense_rank() OVER ( partition by company order by growth desc) end) as ranked_growth from ",statistic,"_table;",sep="")
+    
+    ## Send query request and display result
+    res <- dbSendQuery(my_conn,query)
+    my_df <- dbFetch(res)
+    print(datatable(my_df))
+    dbClearResult(res)
+    dbDisconnect(my_conn)
+    }
+}
+
+
+yty_growth_ranking("Revenue","new_table")
+yty_growth_ranking("Revenue","new_table",partition=1)
+
+
+## aggregate data to yearly data and build out running yearly average for last 3 years
+
 
 ```
 
