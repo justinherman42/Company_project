@@ -9,7 +9,7 @@ yty_growth <- function(statistic,table_name){
     query <- paste("WITH Last_Year  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) OVER( PARTITION BY Company ORDER BY Report_Date)  Last_Year_",statistic," FROM ",table_name,") SELECT Company,Report_Date,",statistic, ",Last_Year_",statistic,", ROUND((Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,"*-1,3) AS Growth FROM Last_Year;",sep="" )
     res <- dbGetQuery(my_conn,query)
     write.csv(res, file = paste("yty_growth",statistic,".csv",sep="" ))
-    print ("csv saved to ",getwd())
+    paste("csv saved to: ",getwd())
     gc()
     dbDisconnect(my_conn)
 }
@@ -36,7 +36,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
         ## Send query request and display result
         res <- dbGetQuery(my_conn,query)
         write.csv(res, file = paste("Industry_Quarterly_ranked_",statistic,".csv",sep="" ))
-        print ("csv saved to ",getwd())
+        paste("csv saved to: ",getwd())
         gc()
         dbDisconnect(my_conn)
     }
@@ -48,7 +48,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
         ## Send query request and display result
         res <- dbGetQuery(my_conn,query)
         write.csv(res, file = paste("Company_Quarterly_ranked_",statistic,".csv",sep="" ))
-        print ("csv saved to ",getwd())
+        paste("csv saved to: ",getwd())
         gc()
         dbDisconnect(my_conn)
     }
@@ -70,7 +70,7 @@ yearly_cum_sum_revenue <- function()
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
     write.csv(res, file = paste("Three_Year_Avg_revenue.csv",sep="" ))
-    print ("csv saved to ",getwd())
+    paste("csv saved to: ",getwd())
     gc()
     dbDisconnect(my_conn)
 }           
