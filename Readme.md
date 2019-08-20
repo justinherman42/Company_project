@@ -15,7 +15,7 @@ database= db_name <br />
 
 
 ### .R files
-+ The . R files are all loaded into the main branch of the github.
++ The . R files are all loaded into a subfolder on this hub called r_scripts.
 + The **execute_windows_functions.R** script neeeds to be run locally
   + This script Will call the other scripts saved onto github and execute the projects work flow
 + The order of execution is as follows: 
