@@ -21,7 +21,8 @@ database= db_name <br />
 + The order of execution is as follows: 
 <br />
   execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
-  <br />
+ <br />
+ 
 + The build_databse.R script, executes a script which calls to the api and inserts results into a mysql db
 + As mentioned, execute_windows_functions.R calls all other scripts and executes the windows functions as well
 + there are various print statements sent to the cmd throughout to validate the flow is working
