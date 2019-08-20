@@ -42,7 +42,8 @@ json_to_df <- function(tag)
 ### Function initalizes table creation in mysql
 ### takes stock tag(chracter), tablename(character)
 ### If table already exists, will tell you to use different name or use update function instead
-build_table <- function(tag,tablename){
+build_table <- function(tag,tablename)
+    {
     
     ## import df from json api call function 
     df <- json_to_df(tag)
@@ -59,7 +60,7 @@ build_table <- function(tag,tablename){
     ## Build table from df
     tryCatch(dbWriteTable(my_conn, value = df, 
                           name = tablename,
-                          overwrite =FALSE,
+                          overwrite =TRUE,
                           row.names = FALSE) ,error= function(e){print("table can not be overwritten and already exists. Please use update table function or change name")})
     
     ## Set primary key to Companytag+Date
