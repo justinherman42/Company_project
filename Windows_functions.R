@@ -1,7 +1,6 @@
 
 ### Build windows functions
 
-
 ### Uses Lag to build Year over year quarterly growth for desired columns
 yty_growth <- function(statistic,table_name){
     my_conn<-dbConnect(RMariaDB::MariaDB(),
