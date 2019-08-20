@@ -27,7 +27,7 @@ database= db_name <br />
 + As mentioned, execute_windows_functions.R calls all other scripts and executes the windows functions as well
 + there are various print statements sent to the cmd throughout to validate the flow is working
 + One key difference between the .R files and the notebook is the .R files will save to current working drive the query results from the windows functions
-
++ I have added all of the csv files from the windows function query's to csv file folder
 
 ### Notebook file
 + The notebook file is here as an all in one work flow
