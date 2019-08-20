@@ -27,9 +27,12 @@ yty_growth("OperatingExpenses","financials")
 
 ## Industry level ranking
 yty_ranking("Revenue","financials")
-
+print("passed first")
 ## Company level ranking
 yty_ranking("Revenue","financials",partition=1)
 
 ## 3 year moving average 
 yearly_cum_sum_revenue()
+
+print("")
+paste( "All scripts have been executed. All csv files for the windows functions should be saved on your cwd.",getwd())

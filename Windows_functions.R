@@ -7,6 +7,8 @@ yty_growth <- function(statistic,table_name){
                        default.file=db_credentials,
                        group=my_sql_db) 
     query <- paste("WITH Last_Year  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) OVER( PARTITION BY Company ORDER BY Report_Date)  Last_Year_",statistic," FROM ",table_name,") SELECT Company,Report_Date,",statistic, ",Last_Year_",statistic,", ROUND((Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,"*-1,3) AS Growth FROM Last_Year;",sep="" )
+    print(" Query for YOY Growth  "  )
+    print(query)
     res <- dbGetQuery(my_conn,query)
     write.csv(res, file = paste("yty_growth",statistic,".csv",sep="" ))
     paste("csv saved to ",getwd())
@@ -33,6 +35,8 @@ yty_ranking <- function(statistic,table_name,partition=0){
                        " FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,
                        ",Last_Year_",statistic,", ROUND((-1*Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,
                        ",3) AS growth FROM Last_Year) SELECT *, (case when growth is not null then dense_rank() OVER ( ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")        ## Send query request and display result
+        print(" Query for Industry quarterly ranked windows Function"  )
+        print(query)
         res <- dbGetQuery(my_conn,query)
         write.csv(res, file = paste("Industry_Quarterly_ranked_",statistic,".csv",sep="" ))
         paste("csv saved to ",getwd())
@@ -43,6 +47,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
     ##Build query with partition
     else {
         query <- paste("WITH Last_Year  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) OVER( PARTITION BY Company ORDER BY Report_Date) Last_Year_",statistic," FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,",Last_Year_",statistic,", ROUND((Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,"*-1,3) AS growth FROM Last_Year) SELECT *, (case when growth is not null then dense_rank() OVER ( PARTITION BY Company ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")
+        print(" Query for Company quarterly ranked windows Function"  )
         print(query)
         ## Send query request and display result
         res <- dbGetQuery(my_conn,query)
@@ -65,6 +70,8 @@ yearly_cum_sum_revenue <- function()
         " WITH yearly_revenue AS (SELECT Company, Year(Report_Date) AS years, sum(revenue) AS revenues FROM financials GROUP BY Company,",
         "Year(Report_Date) ORDER BY Company,Year(Report_Date)) SELECT *, CASE WHEN years not in (2009,2010)	then sum(revenues) OVER",
         "(ORDER BY Company, years rows between 3 preceding and current row) else null end AS 'Three_Year_Running_Avg' FROM yearly_revenue ORDER BY Company,years;", sep="" )
+    print(" Query for three year running average"  )
+    print(query)
     
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
