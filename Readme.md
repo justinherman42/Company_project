@@ -1,11 +1,11 @@
 ## API Project
-Repository contains a project built as a self contained notebook, as well as R scripts individualized to run on cmd. Both Notebook files and .R files assume a dba has created a mysql database for us and we have saved our credential files.  The script loads credential files saved locally from a cnf file. 
+Repository contains a project built as a self contained notebook, as well as R scripts individualized to run on cmd. Both Notebook files and .R files assume a dba has created a mysql database for us and we have saved our credential files.  The script loads credential files saved locally as a cnf file. 
 
-Please find the following line of code, it should be located in the build_database.R or in the notebook file
+Please find the following line of code, it should be located in the build_database.R or in the notebook file and insert your .cnf file
 
 db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
-the file should have the following format<br />
+the file should be saved as a .cnf and have the following format:<br />
 [db_name]<br />
 user=user_Name<br />
 password= pw <br />
