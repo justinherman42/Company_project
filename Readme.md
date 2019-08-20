@@ -34,3 +34,6 @@ database= db_name <br />
 + It produces an html document which is easy to read and has also been uploaded to the repository
 + Unlike the .R files, the windows functions simply print out a searchable datatable for their query results
 + I recommend you view the html file api_request_project.html, as it documents the project in an easily digestible manner 
++ One other major difference is that the notebook file doesn't overwrite a db if it already exists. As you can't really change the .R files, i decided for sake of brevity it would be easier to allow the script to run at cmd prompt as many times as you would like.  The notebook file will require that you either delete the old db, rename the new db creation, or skip the initial function to build table.
+
+
