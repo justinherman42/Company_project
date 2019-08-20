@@ -1,6 +1,5 @@
 
 ### Library import
-rm(list=ls())
 library(httr)
 library(jsonlite)
 library(lubridate)
@@ -10,6 +9,7 @@ library(DT)
 library(knitr)
 library(kableExtra)
 library(devtools)
+library(sys)
 
 ## Build df displaying package versions  
 pack_ver1 <- cbind("httr",as.character(packageVersion("httr")))
