@@ -104,3 +104,5 @@ update_table <- function(tags,tablename){
         print(paste("db was updated correctly with: ",tag ))
     }
 }
+
+print("Functions were properly loaded")
