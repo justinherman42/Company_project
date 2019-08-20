@@ -2,14 +2,18 @@
 Repository contains a project built as a self contained notebook, as well as R scripts individualized to run on cmd. Both Notebook files and .R files assume a dba has created a mysql database for us and we have saved our credential files.  The script loads credential files saved locally from a cnf file. 
 
 Please find the following line of code, it should be located in the build_database.R or in the notebook file
+
 db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
 the file should have the following format
-[db_name]
-user=user_Name
-password= pw
+[db_name]<br />
+user=user_Name<br />
+password= pw <br />
+
 host= host
+
 port= port
+
 database= db_name
 
 
