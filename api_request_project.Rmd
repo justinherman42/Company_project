@@ -238,15 +238,21 @@ dbDisconnect(my_conn)
 ##   windows functions {.tabset .tabset-fade}
 
 
-I am looking at 10 of the largest publicly traded banks by cap size.  Windows functions can be useful to compare value over different periods.  The main windows functions we use below are LAG, DENSERANK and ROWS. Lag is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use lag set with 4, to compare the YOY(year over year) quarterly growth.  The lag gets us the performance of any statistic from the preceding year of the matching quarter(for Q1 2019 lag returns Q1 2018).  We then just use a simple growth formula to measure percentage change. The next function builds a ranking based on growth.  The last function represents how one would build a cumulative sum
+I am looking at 10 of the largest publicly traded banks by cap size.  Windows functions can be useful to compare value over different periods.  The main windows functions we use below are 
+
++ LAG- allows us to select a value that lags behind current value
++ DENSERANK allows us to rank results based upon partition 
++ ROWS allows us to grab rows preceeding our current value
+
+In my queries, LAG is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use LAG set with 4, to compare the YOY(year over year) quarterly growth.  For exmaple, in our data lag,4 returns Q1 2018 if our current value is Q1 2019.  We can then use a growth formula to measure growth as percentage change.  Next I use DENSERANK to rank the results of our LAG querie. The next function builds a ranking based on growth, and cna be modified to look at industry level versus company level quarterly performance rankings.  The last function builds a three year rolling average.  It isn't really all that functional, it's meant more to demonstrate how one would apply such a query
 
 ### Build windows functions
 
-+ Functions will be called again in there section, but they are listed here with some inline notes
++ Functions will be called again in their section, but they are listed here with some inline notes
 
 ```{r}
-
 ### Uses Lag to build Year over year quarterly growth for desired columns
+
 yty_growth <- function(statistic,table_name){
     my_conn<-dbConnect(RMariaDB::MariaDB(),
                    default.file=db_credentials,
@@ -299,9 +305,9 @@ yty_ranking <- function(statistic,table_name,partition=0){
     }
 }
 
-## aggregate data to yearly data and build out running yearly average for last 3 years
-## Query does not take any inputs, it's to show how you would create cumulative sum value FROM customer
-## Instead of getting cumulative sum, I took average of past 3 years, and forced Null values for years 2009 and 2010
+## aggregate data to yearly data and build out a 3 year moving  average 
+## Query does not take any inputs, it's to show how you would create a moving average, similar to creating a cumulative sum value for customers
+
 yearly_cum_sum_revenue <- function()
 {
     my_conn<-dbConnect(RMariaDB::MariaDB(),
@@ -319,7 +325,6 @@ yearly_cum_sum_revenue <- function()
     dbDisconnect(my_conn)
     return(datatable(res))
 }           
-         
 ```
 
 ### Execute yty_Growth with Revenue 
@@ -346,11 +351,13 @@ yty_growth <- function(statistic,table_name){
     return(datatable(res))
 }
 
+## call function
 yty_growth("Revenue","financials")
 ```
 
 
 ### Execute yty_Growth with operating expenses
+
 + Function is identical to function in previous section
     + See Execute yty_growth with Revenue section for explanation of function 
 
@@ -368,6 +375,7 @@ yty_growth <- function(statistic,table_name){
     return(datatable(res))
 }
 
+## call function
 yty_growth("OperatingExpenses","financials")
 
 ```
@@ -417,13 +425,16 @@ yty_ranking <- function(statistic,table_name,partition=0){
     }
 }
 
+## call function
 yty_ranking("Revenue","financials")
 ```
 
 
 ### Execute yty_ranking grouped by industry
 
+
 **same function as previous section **
+
 + Function takes a statistic (revenue, assets  etc), creates a growth rate based on that statistic(mimics our original growth function), and then creates a ranking using dense_rank().
 + The query uses a CTE to build the growth rate table(Last_Year), it then uses another CTE to call Last_Year debt and build our growth_rate for that statistic and finally it uses the results from the 2nd CTE and runs dense rank of the growth_rate over a window based on time with the option to additionally Partition the window on industry level or Company level.
 + We can set partition, which determines if we execute the if or else block.
@@ -469,17 +480,18 @@ yty_ranking <- function(statistic,table_name,partition=0){
     }
 }
 
+## call function
 yty_ranking("Revenue","financials",partition=1)
 ```
 
 ### Execute yearly cumulative sum
 
 + This function is more for show than utility
-+ As the directions suggested a windows function tracking cumsum values for customers, it mimics that by creating yearly revenue and grabbing the average of yearly revenue over a window including the 2 years prior.
-    + Grabbing the three year average was uneccessary. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
-+ One dangerous part of the query is if data is incomplete it will return some averages that may not be 3 year averages. In order to return Null for the first 2 values(2009 and 2010) I created a case when to return null for 2009 and 2010
-    + If a Company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong".  
-    + In our case all data is complete 
++ As the directions suggested attempting a windows function tracking cumsum values for customers, this query mimics that workflow by creating a moving average of the yearly revenue over a window including the 2 years prior.
+  + Grabbing the three year average was uneccessary. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
+  + Another moving part is that the query first uses a cte to build yearly summed data from the quarterly data
+  + The function then uses that table with ROWS to build the 3 year moving average.  It adds casewhen in order to ensure a NUll resultfor the years 2009 and 2010(less than 3 years)
+    + One dangerous part of the query is if data is incomplete it will return some averages that may not be 3 year moving averages. In order to return Null for the first 2 values(2009 and 2010) I created a case when to return null for 2009 and 2010. If a Company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong". In our case all data is complete 
 
 ```{r}
 yearly_cum_sum_revenue <- function()
@@ -500,6 +512,7 @@ yearly_cum_sum_revenue <- function()
     return(datatable(res))
 }         
 
+## call function
 yearly_cum_sum_revenue()
 ```
 
