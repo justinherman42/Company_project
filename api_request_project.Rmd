@@ -240,15 +240,16 @@ dbDisconnect(my_conn)
 
 I am looking at 10 of the largest publicly traded banks by cap size.  Windows functions can be useful to compare value over different periods.  The main windows functions we use below are 
 
-+ LAG- allows us to select a value that lags behind current value
++ LAG- allows us to select a value that lags current value
 + DENSERANK allows us to rank results based upon partition 
-+ ROWS allows us to grab rows preceeding our current value
++ ROWS allows us to grab rows preceding our current value
 
-In my queries, LAG is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use LAG set with 4, to compare the YOY(year over year) quarterly growth.  For exmaple, in our data lag,4 returns Q1 2018 if our current value is Q1 2019.  We can then use a growth formula to measure growth as percentage change.  Next I use DENSERANK to rank the results of our LAG querie. The next function builds a ranking based on growth, and cna be modified to look at industry level versus company level quarterly performance rankings.  The last function builds a three year rolling average.  It isn't really all that functional, it's meant more to demonstrate how one would apply such a query
+In my queries, LAG is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use LAG set with 4, to compare the YOY(year over year) quarterly growth.  For example, in our data lag,4 returns Q1 2018 if our current value is Q1 2019.  We can then use a growth formula to measure growth as percentage change.  Next, I use DENSERANK to rank the results of our LAG query. The next function builds a ranking based on growth and can be modified to look at industry level versus company level quarterly performance rankings.  The last function builds a three-year rolling average.  It isn't really all that functional, it's meant more to demonstrate how one would apply such a query
 
 ### Build windows functions
 
 + Functions will be called again in their section, but they are listed here with some inline notes
+
 
 ```{r}
 ### Uses Lag to build Year over year quarterly growth for desired columns
@@ -488,10 +489,11 @@ yty_ranking("Revenue","financials",partition=1)
 
 + This function is more for show than utility
 + As the directions suggested attempting a windows function tracking cumsum values for customers, this query mimics that workflow by creating a moving average of the yearly revenue over a window including the 2 years prior.
-  + Grabbing the three year average was uneccessary. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
-  + Another moving part is that the query first uses a cte to build yearly summed data from the quarterly data
-  + The function then uses that table with ROWS to build the 3 year moving average.  It adds casewhen in order to ensure a NUll resultfor the years 2009 and 2010(less than 3 years)
-    + One dangerous part of the query is if data is incomplete it will return some averages that may not be 3 year moving averages. In order to return Null for the first 2 values(2009 and 2010) I created a case when to return null for 2009 and 2010. If a Company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong". In our case all data is complete 
+  + Grabbing the three-year average was unnecessary. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
+  + Another moving part is that the query first uses a CTE to build yearly summed data from the quarterly data
+  + The function then uses that table with ROWS to build the 3-year moving average.  It adds casewhen in order to ensure a NUll result for the years 2009 and 2010(less than 3 years)
+    + One dangerous part of the query is if data is incomplete it will return some averages that may not be 3 year moving averages. In order to return Null for the first 2 values (2009 and 2010) I created a case when to return null for 2009 and 2010. If a Company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong". In our case all data is complete
+
 
 ```{r}
 yearly_cum_sum_revenue <- function()
