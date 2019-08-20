@@ -61,7 +61,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
 ## aggregate data to yearly data and build out running yearly average for last 3 years
 ## Query does not take any inputs, it's to show how you would create cumulative sum value FROM customer
 ## Instead of getting cumulative sum, I took average of past 3 years, and forced Null values for years 2009 and 2010
-yearly_cum_sum_revenue <- function()
+yearly_moving_avg <- function()
 {
     my_conn<-dbConnect(RMariaDB::MariaDB(),
                        default.file=db_credentials,
