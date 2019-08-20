@@ -505,8 +505,4 @@ yearly_cum_sum_revenue()
 
 
 
-##   Data Exploration  {.tabset .tabset-fade}
-
-
-
 
