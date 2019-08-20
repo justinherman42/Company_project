@@ -5,16 +5,13 @@ Please find the following line of code, it should be located in the build_databa
 
 db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
-the file should have the following format
+the file should have the following format<br />
 [db_name]<br />
 user=user_Name<br />
 password= pw <br />
-
-host= host
-
-port= port
-
-database= db_name
+host= host <br />
+port= port <br />
+database= db_name <br /> 
 
 
 ### .R files
