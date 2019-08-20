@@ -17,7 +17,7 @@ database= db_name <br />
 ### .R files
 + The . R files are all loaded into the main branch of the github.
 + The **execute_windows_functions.R** script neeeds to be run locally
-+ This script Will call the other scripts and execute the projects work flow
+ + This script Will call the other scripts saved onto github and execute the projects work flow
 + The order of execution is as follows: 
 
 ###  execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
