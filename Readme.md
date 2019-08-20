@@ -20,7 +20,7 @@ database= db_name <br />
 + This script Will call the other scripts and execute the projects work flow
 + The order of execution is as follows: 
 
-  execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
+###  execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
 <br />
  
 + The build_databse.R script, executes a script which calls to the api and inserts results into a mysql db
