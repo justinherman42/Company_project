@@ -1,10 +1,21 @@
 library(devtools)
 
+source_github <- function(u) {
+    # load package
+    require(RCurl)
+    
+    # read script lines from website
+    script <- getURL(u, ssl.verifypeer = FALSE)
+    
+    # parase lines and evaluate in the global environment
+    eval(parse(text = script))
+}
+
 ## Function to grab R files from github
-
-
-source_github("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_packages.R")
-source_github("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_functions.R")
+source_url("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_packages.R")
+source_url("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_functions.R")
+#source_github("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_packages.R")
+#source_github("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_functions.R")
 
 
 #source("load_packages.R")
@@ -16,7 +27,7 @@ db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
 
 ### Call functions and build db {.tabset .tabset-fade}
-
+df <- json_to_df("USB")
 top_10_banks <- c('WFC', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG")
 ## build a table in sql
 build_table('USB',"financials")
