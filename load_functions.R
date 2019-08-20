@@ -1,5 +1,5 @@
 ### Functions
-
+source_url("https://raw.githubusercontent.com/justinherman42/Company_project/master/load_packages.R")
 
 ### Function accesses financial data API and returns a dataframe ready to be inserted into SQL 
 ### Function takes companies stock tag as an input string  
