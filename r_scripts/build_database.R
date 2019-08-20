@@ -11,7 +11,7 @@ db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
 ### Call functions and build db {.tabset .tabset-fade}
 df <- json_to_df("USB")
-top_10_banks <- c('WFC', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG")
+top_10_banks <- c('WFC', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB')
 ## build a table in sql
 build_table('USB',"financials")
 update_table(top_10_banks,"financials")
