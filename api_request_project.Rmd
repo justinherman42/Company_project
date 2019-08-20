@@ -18,12 +18,13 @@ output:
 
 # Overview {.tabset .tabset-fade}
 
-This project was created to form an ETL pipeline for an API. I accessed financial data API from [link](https://financialmodelingprep.com/developer/docs/) and build out a my_sql db. R and R libraries were used as my interface with the API and the my_sql database.All packages were listed in the first section **Library Import**. The report was created as an accompanying html document and will live in my GitHub, the report may be periodically updated. 
+This project was created to form an ETL pipeline for an API. I accessed financial data API from [link](https://financialmodelingprep.com/developer/docs/) and built out a MYSQL database. R and R libraries were used as my interface with the API and the MYSQL database. All packages were listed in the first section **Library Import**. The report was created as an accompanying html document and will live in my GitHub, the report may be periodically updated. 
 
-I decided to explore US regional banks. I built a function to access the API and convert JSON data to a R Dataframe. This function also cleans the data and preps it for our SQL database. Another function was used to insert that R Dataframe into a my_sql database. After the data was inserted into SQL, SQL queries were executed within R, and the query results were displayed in a datatable in R.  Datatables are convenient, as they give users more flexibility than traditional print statements. SQL Windows functions were then used to manipulate the SQL data to explore aggregated behaviors. Some of those functions were generalized to handle any numeric column. Generally, the functions are there to show an understanding of SQL and how to perform data manipulation.   
+I decided to explore US regional banks. I built a function to access the API and convert JSON data to a R Dataframe. This function also cleans the data and preps it for our SQL database. Another function was used to insert that R Dataframe into a MYSQL database. After the data was inserted into SQL, SQL queries were executed within R, and the query results were displayed in a datatable in R.  Datatables are convenient, as they give users more flexibility than traditional print statements. SQL Windows functions were then used to manipulate the SQL data to explore aggregated behaviors. Some of those functions were generalized to handle any numeric column. Generally, the functions are there to show an understanding of SQL and how to perform data manipulation.   
 
 ## Build out  functions  {.tabset .tabset-fade}
-In the section below, the API is accessed and the JSON data is converted and inserted into a mysql db.  After reading through all the subsections below, please see windows functions section to the right for more exploration. 
+
+In the section below, the API is accessed and the JSON data is converted and inserted into a MYSQL database.  After reading through all the subsections below, please see windows functions section to the right for more exploration. 
 
 ### Library import
 ```{r,message=F,warning=FALSE}
@@ -56,32 +57,32 @@ kable(pack_versions)
 
 
 <p style="font-family: times, serif; font-size:16pt; font-style:italic">**json_to_df**</p> 
-+ accesses our financial data API and returns a cleaned DF
-+ inputs
-    + tag(char)
-        + stock ticker 
++ Accesses our financial data API and returns a cleaned DF
++ Inputs
+    + Tag(char)
+        + Stock ticker 
 
 <p style="font-family: times, serif; font-size:16pt; font-style:italic">**Build_table**</p> 
 
-+ function will take the result of **json_to_df**, a dataframe with stock financial information, and run a query to create an sql table with that dataframe
++ Function  takes the result of **json_to_df**, a dataframe with stock financial information, and runs a query to create an SQL table from that dataframe
 + Returns an error if table already exists, prompting user to rename table or run the **update_table** function
 + To prevent duplicate data, the function creates a primary key based on date+company tag 
 + Inputs
-    + tag(char)
-        + stock ticker
-    + table_name(char)
-        + user choice for my_sql table name
+    + Tag(char)
+        + Stock ticker
+    + Table_name(char)
+        + User choice for MYSQL table name
 
 <p style="font-family: times, serif; font-size:16pt; font-style:italic">**Update table** </p> 
 
-+ Function loops over a list of stock market tags and inserts them into a previously created my_sql db
-+ Function has error handling so that it will refuse to add a df from the loop, if it detects duplicate data in the query table
++ Function loops over a list of stock market tags and inserts them into a previously created MYSQL database
++ Function has error handling so that it will refuse to add a dataframe from the loop if it detects duplicate data in that dataframe
     + If dataframe has duplicates an error will print to screen that "data for {tag} was not added" and the loop will move onto next item in list
-    + if dataframe is inserted successfully, function will print to screen to indicate is was updated
+    + If dataframe is inserted successfully, function will print to screen to indicate is was updated
 + Inputs
     + tags (list of chars)
     + table_name(char)
-        + user choice for my_sql table name
+        + User choice for MYSQL table name
 
  
         
@@ -194,9 +195,9 @@ update_table <- function(tags,tablename){
 ```
 
 
-### Call functions and build db {.tabset .tabset-fade}
-+ create a list of banks to explore
-+ run functions to insert that list into mysql db
+### Call Functions and Build Database {.tabset .tabset-fade}
++ Create a list of banks to explore
++ Run functions to insert that list into MYSQL database
 
 ```{r}
 
@@ -206,9 +207,9 @@ build_table('USB',"financials")
 update_table(top_10_banks,"financials")
 ```
 
-### Explore SQL DB
+### Explore SQL Database
 
-+ Experiment with sql db
++ Experiment with SQL database
 
 ```{r}
 ## practice some query with db
@@ -235,21 +236,20 @@ dbDisconnect(my_conn)
 
 
 
-##   windows functions {.tabset .tabset-fade}
+##   Windows Functions {.tabset .tabset-fade}
 
 
-I am looking at 10 of the largest publicly traded banks by cap size.  Windows functions can be useful to compare value over different periods.  The main windows functions we use below are 
+I look at 10 of the largest publicly traded banks by capsize.  Windows functions can be useful to compare value over different periods. The main windows functions used are 
 
 + LAG- allows us to select a value that lags current value
-+ DENSERANK allows us to rank results based upon partition 
-+ ROWS allows us to grab rows preceding our current value
++ DENSERANK- allows us to rank results based upon partition 
++ ROWS- allows us to grab rows preceding our current value
 
-In my queries, LAG is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use LAG set with 4, to compare the YOY(year over year) quarterly growth.  For example, in our data lag,4 returns Q1 2018 if our current value is Q1 2019.  We can then use a growth formula to measure growth as percentage change.  Next, I use DENSERANK to rank the results of our LAG query. The next function builds a ranking based on growth and can be modified to look at industry level versus company level quarterly performance rankings.  The last function builds a three-year rolling average.  It isn't really all that functional, it's meant more to demonstrate how one would apply such a query
+In my queries, LAG is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use LAG set with 4 to compare the YOY(year over year) quarterly growth.  For example, in our data (lag,4) returns Q1 2018 if our current value is Q1 2019.  I then use a growth formula to measure growth.  Next, I used DENSERANK to rank the results of our LAG query. This function builds a ranking based on growth and can be modified to look at industry level versus company level quarterly performance rankings.  The last function builds a three-year rolling average.  It's designed  to demonstrate how one would apply a cumulative sum type windows function query.
 
-### Build windows functions
+### Build Windows Functions
 
-+ Functions will be called again in their section, but they are listed here with some inline notes
-
++ All windows functions are listed below, but they will be called individually in their sections as well. Here, they are listed with some extra inline notes
 
 ```{r}
 ### Uses Lag to build Year over year quarterly growth for desired columns
@@ -309,7 +309,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
 ## aggregate data to yearly data and build out a 3 year moving  average 
 ## Query does not take any inputs, it's to show how you would create a moving average, similar to creating a cumulative sum value for customers
 
-yearly_cum_sum_revenue <- function()
+yearly_moving_avg <- function()
 {
     my_conn<-dbConnect(RMariaDB::MariaDB(),
                    default.file=db_credentials,
@@ -328,14 +328,16 @@ yearly_cum_sum_revenue <- function()
 }           
 ```
 
-### Execute yty_Growth with Revenue 
+### Execute yty_Growth 
+
+#### With Revenue 
 
 +  Inputs 
-    + statistic (any numeric column)
-    + tablename (any character value) 
+    + Statistic (any numeric column)
+    + Tablename (any character value) 
 +  Returns YOY Growth rate for company performance
 +  Creates a CTE table Last_Year that uses a lag of 4 to grab the last year quarterly results and builds that column as a new column
-+  The function finishes by building a Growth rate based on last year revenue versus this year revenue.
++  The function finishes by building a Growth rate based on the newly created last year column versus the current year value.
 
 ```{r}
 ### Uses Lag to build Year over year quarterly Growth for desired columns
@@ -356,10 +358,11 @@ yty_growth <- function(statistic,table_name){
 yty_growth("Revenue","financials")
 ```
 
+\n
+\n
+#### With Operating Expenses
 
-### Execute yty_Growth with operating expenses
-
-+ Function is identical to function in previous section
++ Function is identical to above function
     + See Execute yty_growth with Revenue section for explanation of function 
 
 ```{r}
@@ -381,13 +384,14 @@ yty_growth("OperatingExpenses","financials")
 
 ```
 
-### Execute yty_ranking grouped by Company
+### Execute yty_ranking 
 
-+ Function takes a statistic (revenue, assets etc), creates a growth rate based on that statistic (mimics our original growth function), and then creates a ranking using dense_rank().
-+ The query uses a CTE to build the growth rate table(Last_Year), it then uses another CTE to call Last_Year debt and build our growth_rate for that statistic and finally it uses the results FROM the 2nd CTE and runs dense rank of the growth_rate over a window based on time with the option to additionally Partition the window on industry level or Company level.
-+ We can set partition, which determines if we execute the if or else block.
+#### PARTIONED BY Industry
+
++ The query uses a CTE to build a growth rate table(Last_Year). It then uses another CTE to call Last_Year and build a growth_rate column for input statistic.  Finally it uses the results FROM the 2nd CTE and runs DENSERANK of the growth_rate with the option to additionally Partition the window on industry level or Company level.
 + If partition is set to 0, it will execute the query as grouped at the industry level.  
-    + The below function returns rank at the industry level
++ If partion is set to another integer value, it will return company level ranked results 
+  + The below function returns rank at the industry level
 
 ```{r}
 yty_ranking <- function(statistic,table_name,partition=0){
@@ -431,16 +435,12 @@ yty_ranking("Revenue","financials")
 ```
 
 
-### Execute yty_ranking grouped by industry
+#### Partioned by Company
 
+**same function as above function **
 
-**same function as previous section **
-
-+ Function takes a statistic (revenue, assets  etc), creates a growth rate based on that statistic(mimics our original growth function), and then creates a ranking using dense_rank().
-+ The query uses a CTE to build the growth rate table(Last_Year), it then uses another CTE to call Last_Year debt and build our growth_rate for that statistic and finally it uses the results from the 2nd CTE and runs dense rank of the growth_rate over a window based on time with the option to additionally Partition the window on industry level or Company level.
-+ We can set partition, which determines if we execute the if or else block.
-+ If partition is set to any number other than 0, it will execute the query as grouped at the Company level.  
-    + The below function returns rank at the Company level
++ See previous explanation
++ This function sets partition to 1 and displays industry level quarterly results
 
 
 ```{r}
@@ -485,18 +485,18 @@ yty_ranking <- function(statistic,table_name,partition=0){
 yty_ranking("Revenue","financials",partition=1)
 ```
 
-### Execute yearly cumulative sum
+### Execute Yearly Moving Average
 
 + This function is more for show than utility
-+ As the directions suggested attempting a windows function tracking cumsum values for customers, this query mimics that workflow by creating a moving average of the yearly revenue over a window including the 2 years prior.
-  + Grabbing the three-year average was unnecessary. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
-  + Another moving part is that the query first uses a CTE to build yearly summed data from the quarterly data
-  + The function then uses that table with ROWS to build the 3-year moving average.  It adds casewhen in order to ensure a NUll result for the years 2009 and 2010(less than 3 years)
-    + One dangerous part of the query is if data is incomplete it will return some averages that may not be 3 year moving averages. In order to return Null for the first 2 values (2009 and 2010) I created a case when to return null for 2009 and 2010. If a Company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong". In our case all data is complete
++ As the directions suggested attempting a windows function tracking cumsum values for customers, this query mimics that workflow.  It creates a three year moving average of the yearly revenue over a window including the 2 years prior.
+  + Grabbing the three-year average was random. I could have just created cumsum for revenue, but as that value doesn't mean much here, I figured I would add some moving parts to the query
+  + Another moving part is that the query first uses a CTE to build yearly summed data from our quarterly data
+  + The function uses that CTE table with the function ROWS to build the three year moving average.  It adds CASEWHEN in order to ensure a NUll result for the years 2009 and 2010(less than 3 years)
+    + One dangerous part of the query is if data is incomplete it will return some averages that may not be three year moving averages. In order to return Null for the first 2 values (2009 and 2010) I created a case when to return null for 2009 and 2010. If a company doesn't start in 2009, say it went public in 2011, then it's first and second running total would be "wrong". In our case all data is complete
 
 
 ```{r}
-yearly_cum_sum_revenue <- function()
+yearly_moving_avg <- function()
 {
     my_conn<-dbConnect(RMariaDB::MariaDB(),
                    default.file=db_credentials,
@@ -515,7 +515,7 @@ yearly_cum_sum_revenue <- function()
 }         
 
 ## call function
-yearly_cum_sum_revenue()
+yearly_moving_avg()
 ```
 
 
@@ -524,7 +524,7 @@ yearly_cum_sum_revenue()
 
 This section is just an extremely fast overview of capabilities of R to pull in data and create tables and graphs.  We are simply exploring the revenue column and some quick visualizations for EDA. Overall little time was invested, but I will gladly show more if asked 
 
-### Quick call to pull in Revenue from sql db
+### Call SQL Database
 
 ```{r}
 my_conn<-dbConnect(RMariaDB::MariaDB(),
@@ -539,7 +539,7 @@ gc()
 dbDisconnect(my_conn)
 ```
 
-### examples of quick tables for analysis
+### Tables
 
 
 <p style="font-family: times, serif; font-size:16pt; font-style:italic">**Table of Revenue and Growth of Big Banks**</p>
@@ -547,9 +547,6 @@ dbDisconnect(my_conn)
 ```{r,echo=FALSE}
 datatable(revenue_df)
 ```
-
-
-
 
 <p style="font-family: times, serif; font-size:16pt; font-style:italic">**Table of Total Revenue From 2009-2019 of Big Banks**</p>
 
@@ -589,10 +586,7 @@ cumsum_revnue %>%
   datatable()
 ```
 
-
 ### Graphs
-
-
 
 ```{r,echo=FALSE,warning=F}
 
@@ -604,8 +598,7 @@ ggplot(cumsum_revnue, aes(x = Report_date, y = cum_sum_revenue_in_billions, colo
   ggtitle("Cumulative Sum Revenue By Bank From 2009-20019  ")
 ```
 
-
-We can see that Wells Fargo is way too large and it effects our comparisons.  Lets exclude wells Fargo
+We can see that Wells Fargo is way too large and it effects our comparisons.  Lets exclude Wells Fargo
 
 ```{r,echo=FALSE,warning=F}
 exlcuding_wells_fargo <- cumsum_revnue %>% 
@@ -617,7 +610,7 @@ ggplot(exlcuding_wells_fargo, aes(x = Report_date, y = cum_sum_revenue_in_billio
   ggtitle("Cumulative Sum Revenue By Bank From 2009-20019 Excluding Wells Fargo  ")
 ```
 
-While the cumulative sum can give us a picture of overall strength in the market and while it appears some banks broke away around 2011, looking at quarterly revenue could yield more.
+While the cumulative sum can give us a picture of overall strength in the market and while it appears some banks broke away around 2011, looking at quarterly revenue could yield more fruitful.
 
 ```{r,echo=FALSE,warning=F}
 
@@ -655,7 +648,7 @@ Then we can graph growth rate
 ggplot(revenue_df, aes(x = Report_date, y = growth, colour = company)) + 
   geom_line(size = 1)+
   geom_point()+ 
-  ggtitle("growth rate by bank from 2009-20019")
+  ggtitle("Growth Rate By Bank From 2009-20019")
 ```
 
 Our graph allows us to see that there were some intense swings in the growth rate of HBAN and KEY My assumption would be they have relatively small cap sizes, or they experienced prolonged damage from the recession.  We can explore their cap size relative to other banks. Another thing to explore would be filtering this from 2012 forward to get a better idea of swings minus huge outliers and getting several years removed from recession.  We can also explore all negative growth rate quarters and see if there were any patterns.  We would likely want to build individual graphs of these banks as well.  
