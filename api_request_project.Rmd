@@ -318,9 +318,7 @@ yearly_cum_sum_revenue <- function()
     dbDisconnect(my_conn)
     return(datatable(res))
 }           
-yearly_cum_sum_revenue()            
-
-
+         
 ```
 
 ### Execute yty_growth with Revenue 
@@ -339,6 +337,7 @@ yty_growth <- function(statistic,table_name){
                    default.file=db_credentials,
                    group=my_sql_db) 
        query <- paste("WITH last_year_debt AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY Company ORDER BY Report_Date)  last_year_",statistic," FROM ",table_name,") SELECT Company,Report_Date,",statistic, ",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) AS growth FROM last_year_debt;",sep="" )
+       print(query)
     res <- dbGetQuery(my_conn,query)
     datatable(res)
     gc()
@@ -347,6 +346,15 @@ yty_growth <- function(statistic,table_name){
 }
 
 yty_growth("Revenue","financials")
+
+
+
+```
+
+
+
+```{r}
+
 ```
 
 ### Execute yty_growth with operating expenses
@@ -359,6 +367,7 @@ yty_growth <- function(statistic,table_name){
                    default.file=db_credentials,
                    group=my_sql_db) 
        query <- paste("WITH last_year_debt  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY Company ORDER BY Report_Date)  last_year_",statistic," FROM ",table_name,") SELECT Company,Report_Date,",statistic, ",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) AS growth FROM last_year_debt;",sep="" )
+    print(query)
     res <- dbGetQuery(my_conn,query)
     datatable(res)
     gc()
@@ -391,6 +400,8 @@ yty_ranking <- function(statistic,table_name,partition=0){
                    " FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,
                    ",last_year_",statistic,", ROUND((-1*last_year_",statistic,"-",statistic,")/last_year_",statistic,
                    ",3) AS growth FROM last_year_debt) SELECT *, (CASE WHEN growth IS NOT NULL then DENSE_RANK() OVER ( ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")
+    print(query)
+    
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
     datatable(res)
@@ -402,7 +413,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
     ##Build query with partition
     else {
         query <- paste("WITH last_year_debt  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) Over( PARTITION BY Company ORDER BY Report_Date) last_year_",statistic," FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) AS growth FROM last_year_debt) SELECT *, (CASE WHEN growth IS NOT NULL then DENSE_RANK() OVER ( PARTITION BY Company ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")
-    
+    print(query)
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
     datatable(res)
@@ -440,6 +451,8 @@ yty_ranking <- function(statistic,table_name,partition=0){
                    " FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,
                    ",last_year_",statistic,", ROUND((-1*last_year_",statistic,"-",statistic,")/last_year_",statistic,
                    ",3) AS growth FROM last_year_debt) SELECT *, (case when growth is not null then dense_rank() OVER ( ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")
+    print(query)
+    
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
     datatable(res)
@@ -451,6 +464,7 @@ yty_ranking <- function(statistic,table_name,partition=0){
     ##Build query with partition
     else {
         query <- paste("WITH last_year_debt  AS (SELECT Company,Report_Date,",statistic,", LAG(",statistic, ",4) OVER( PARTITION BY Company ORDER BY Report_Date) last_year_",statistic," FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,",last_year_",statistic,", ROUND((last_year_",statistic,"-",statistic,")/last_year_",statistic,"*-1,3) AS growth FROM last_year_debt) SELECT *, (case when growth is not null then dense_rank() OVER ( PARTITION BY Company ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")
+    print(query)
     
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
@@ -497,7 +511,7 @@ yearly_cum_sum_revenue()
 
 
 
-
+##   Data Exploration  {.tabset .tabset-fade}
 
 
 
