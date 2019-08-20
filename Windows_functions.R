@@ -64,7 +64,7 @@ yearly_cum_sum_revenue <- function()
     query <- paste(
         " WITH yearly_revenue AS (SELECT Company, Year(Report_Date) AS years, sum(revenue) AS revenues FROM financials GROUP BY Company,",
         "Year(Report_Date) ORDER BY Company,Year(Report_Date)) SELECT *, CASE WHEN years not in (2009,2010)	then sum(revenues) OVER",
-        "(ORDER BY Company, years rows between 3 preceding and current row) else null end AS 'running_total' FROM yearly_revenue ORDER BY Company,years;", sep="" )
+        "(ORDER BY Company, years rows between 3 preceding and current row) else null end AS 'Three_Year_Running_Avg' FROM yearly_revenue ORDER BY Company,years;", sep="" )
     
     ## Send query request and display result
     res <- dbGetQuery(my_conn,query)
