@@ -18,13 +18,16 @@ output:
 
 # Overview {.tabset .tabset-fade}
 
-+ access API and build out sql db.  Query db with soem windows functions
+The idea behind this project is to form an ETL pipeline for an API.  I will access financial data API from [link](https://financialmodelingprep.com/developer/docs/) and build out a my_sql db. I use R and R libraries as my interface with the API and my_sql database.  All packages are listed in the first section **Library Import** and the report is created as an html document and uploaded to my GitHub [here](https://github.com/justinherman42/Company_project) periodically for version control. 
 
+I decided to explore US regional banks sized 50-500 billion. First, I build some functions to access API and convert JSON data to an R Dataframe. This function cleans the data and preps it for our sql database.  Functions are then used to insert that dataframe into a my_sql db. Once the data is in my_sql the data is displayed by running queries from within R, and the query results are displayed in a datatable in R. Datatables are convenient as they allow the user to explore the data more than a static print. SQL Windows functions are then used to manipulate the sql data and explore aggregated behaviors.  Some of those functions are generalized to be able to handle any numeric column.  Generally, the functions are there to show an understanding of SQL and how to perform data manipulation.     
 
 ## Build out  functions  {.tabset .tabset-fade}
+In the section below, the API is accessed and the JSON data is converted and inserted in mysql db.  After reading through all the subsections below, please see windows functions section to the right for more exploration. 
 
 ### Library import
 ```{r,message=F,warning=FALSE}
+rm(list=ls())
 library(httr)
 library(jsonlite)
 library(lubridate)
@@ -34,9 +37,54 @@ library(DT)
 library(knitr)
 library(kableExtra)
 
+
+pack_ver1 <- cbind("httr",as.character(packageVersion("httr")))
+pack_ver2 <- cbind("jsonlite",as.character(packageVersion("jsonlite")))
+pack_ver3 <- cbind("lubridate",as.character(packageVersion("lubridate")))
+pack_ver4 <- cbind("tidyverse",as.character(packageVersion("tidyverse")))
+pack_ver5 <- cbind("RMariaDB",as.character(packageVersion("RMariaDB")))
+pack_ver6 <- cbind("DT",as.character(packageVersion("DT")))
+pack_ver7 <- cbind("knitr",as.character(packageVersion("knitr")))
+pack_ver8 <- cbind("kableExtra",as.character(packageVersion("kableExtra")))
+
+pack_versions <- as.data.frame(rbind(pack_ver1,pack_ver2,pack_ver3,pack_ver4,pack_ver5,pack_ver6,pack_ver7,pack_ver8))
+colnames(pack_versions) <- c("Package Name", "Version")
+kable(pack_versions)
 ```
 
-### functions 
+### Functions 
+
+
+<p style="font-family: times, serif; font-size:16pt; font-style:italic">**json_to_df**</p> 
++ accesses our financial data API and returns a cleaned DF
++ inputs
+    + tag(char)
+        + stock ticker 
+
+<p style="font-family: times, serif; font-size:16pt; font-style:italic">**Build_table**</p> 
+
++ function will take the result of **json_to_df**, a dataframe with stock financial information, and run a query to create an sql table with that dataframe
++ Returns an error if table already exists, prompting user to rename table or run the **update_table** function
++ To prevent duplicate data, the function creates a primary key based on date+company tag 
++ Inputs
+    + tag(char)
+        + stock ticker
+    + table_name(char)
+        + user choice for my_sql table name
+
+<p style="font-family: times, serif; font-size:16pt; font-style:italic">**Update table** </p> 
+
++ Function loops over a list of stock market tags and inserts them into a previously created my_sql db
++ Function has error handling so that it will refuse to add a df from the loop, if it detects duplicate data in the query table
+    + If dataframe has duplicates an error will print to screen that "data for {tag} was not added" and the loop will move onto next item in list
+    + if dataframe is inserted successfully, function will print to screen to indicate is was updated
++ Inputs
+    + tags (list of chars)
+    + table_name(char)
+        + user choice for my_sql table name
+
+ 
+        
 ```{r}
 ### Function accesses financial data API and returns a dataframe ready to be inserted into SQL 
 ### Function takes companies stock tag as an input string   
@@ -147,9 +195,12 @@ update_table <- function(tags,tablename){
 
 
 ### Call functions and build db {.tabset .tabset-fade}
++ create a list of banks to explore
++ run functions to insert that list into mysql db
+
 ```{r}
 
-top_10_banks <- c('WFC', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG","RF")
+top_10_banks <- c('WFC', 'PNC', 'BBT', 'STI', 'KEY', 'MTB', 'HBAN', 'ZION', 'CMA', 'FITB',"CFG")
 ## build a table in sql
 build_table('USB',"financials")
 update_table(top_10_banks,"financials")
@@ -174,8 +225,8 @@ print(dbGetQuery(my_conn, "DESCRIBE financials;"))
 res <- dbGetQuery(my_conn, "SELECT * FROM financials;")
 table(is.na(res))
 
-## look at first 10 rows
-res <- dbGetQuery(my_conn, "SELECT * FROM financials LIMIT 10;")
+## look at sql db
+res <- dbGetQuery(my_conn, "SELECT * FROM financials;")
 datatable(res)
 gc()
 dbDisconnect(my_conn)
@@ -187,7 +238,7 @@ dbDisconnect(my_conn)
 ##   windows functions {.tabset .tabset-fade}
 
 
-We are looking at 10 of the largest publicly traded banks by cap size.  The data already has a YOY quarterly adjusted growth figure, but I would like to use windows functions to build that figure with our revenue data.  I functionize the code, so that we can run a query that prodcues YOY reswults for any of the numeric columns in the dataset
+I am looking at 10 of the largest publicly traded banks by cap size.  Windows functions can be useful to compare value over different periods.  The main windows functions we use below are LAG, DENSERANK and ROWS. Lag is used to create a growth column.  Quarterly data can suffer from seasonality, therefore, we can use lag set with 4, to compare the YOY(year over year) quarterly growth.  The lag gets us the performance of any statistic from the preceding year of the matching quarter(for Q1 2019 lag returns Q1 2018).  We then just use a simple growth formula to measure percentage change. The next function builds a ranking based on growth.  The last function represents how one would build a cumulative sum
 
 ### Build windows functions
 
@@ -273,9 +324,12 @@ yearly_cum_sum_revenue()
 ```
 
 ### Execute yty_growth with Revenue 
-+  Takes a statistic(any numeric column), and tablename(any character value) 
-+  Returns YOY(Year Over Year) growth rate for company performance
-+  Creates a cte table last_year_debt that uses a lag of 4 to grab the last year quarterly results and builds that column as a new column
+
++  Inputs 
+    + statistic (any numeric column)
+    + tablename (any character value) 
++  Returns YOY growth rate for company performance
++  Creates a CTE table last_year_debt that uses a lag of 4 to grab the last year quarterly results and builds that column as a new column
 +  The function finishes by building a growth rate based on last year revenue versus this year revenue.
 
 ```{r}
@@ -317,12 +371,12 @@ yty_growth("OperatingExpenses","financials")
 
 ### Execute yty_ranking grouped by Company
 
-+ Function takes a statistic(revenue,assets etc), creates a growth rate based on that statistic(mimics our original growth function), and then creates a ranking using dense_rank().
-+ The query uses a cte to build the growth rate table(last_year_debt), it then uses another cte to call last_year debt and build our growth_rate for that statistic and finally it uses the results FROM the 2nd cte and runs dense rank of the growth_rate over a window based on time with the option to additionaly Partition the window on industry level or Company level.
-+ We can  set partition, which determines if we execute the if or else block.
++ Function takes a statistic (revenue, assets etc), creates a growth rate based on that statistic (mimics our original growth function), and then creates a ranking using dense_rank().
++ The query uses a CTE to build the growth rate table(last_year_debt), it then uses another CTE to call last_year debt and build our growth_rate for that statistic and finally it uses the results FROM the 2nd CTE and runs dense rank of the growth_rate over a window based on time with the option to additionally Partition the window on industry level or Company level.
++ We can set partition, which determines if we execute the if or else block.
 + If partition is set to 0, it will execute the query as grouped at the industry level.  
-    + The below function returns ranks at the industry level
-    
+    + The below function returns rank at the industry level
+
 ```{r}
 yty_ranking <- function(statistic,table_name,partition=0){
     ##Build connection
@@ -365,11 +419,12 @@ yty_ranking("Revenue","financials")
 ### Execute yty_ranking grouped by industry
 
 **same function as previous section **
-+ Function takes a statistic(revenue,assets etc), creates a growth rate based on that statistic(mimics our original growth function), and then creates a ranking using dense_rank().
-+ The query uses a cte to build the growth rate table(last_year_debt), it then uses another cte to call last_year debt and build our growth_rate for that statistic and finally it uses the results from the 2nd cte and runs dense rank of the growth_rate over a window based on time with the option to additionaly Partition the window on industry level or Company level.
-+ We can  set partition, which determines if we execute the if or else block.
++ Function takes a statistic (revenue, assets  etc), creates a growth rate based on that statistic(mimics our original growth function), and then creates a ranking using dense_rank().
++ The query uses a CTE to build the growth rate table(last_year_debt), it then uses another CTE to call last_year debt and build our growth_rate for that statistic and finally it uses the results from the 2nd CTE and runs dense rank of the growth_rate over a window based on time with the option to additionally Partition the window on industry level or Company level.
++ We can set partition, which determines if we execute the if or else block.
 + If partition is set to any number other than 0, it will execute the query as grouped at the Company level.  
-    + The below function returns ranks at the Company level 
+    + The below function returns rank at the Company level
+
 
 ```{r}
 yty_ranking <- function(statistic,table_name,partition=0){
