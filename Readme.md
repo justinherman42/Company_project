@@ -15,7 +15,7 @@ database= db_name <br />
 ### .R files
 The . R files are all loaded into a subfolder on this hub called r_scripts. If you want to execute the scripts run the execute_windows_functions.R script locally. This script Will call the other scripts directly from Github and execute the project’s work flow. The order of execution is as follows:
 
-###  execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
+####  execute_windows_functions.R-->load_packages.R-->load_functions.R-->build_database.R-->Windows_functions.R
 <br />
  
 The build_databse.R script, executes a script which makes a request to the api, builds an R dataframe, and inserts that R dataframe into a MYSQL database. As mentioned, execute_windows_functions.R calls all other scripts. There are various print statements sent to the CMD throughout to validate the flow is working. One key difference between the  R scripts and the notebook is the R scripts will save CSV files to CWD. These CSV files store the results from the windows function queries.  These CSV files have been added to the folder csv_files
