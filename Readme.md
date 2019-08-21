@@ -1,5 +1,5 @@
 ## API Project
-Repository contains a project built as a self contained notebook as well as R scripts individualized to run on cmd. Both Notebook files and .R files assume a DBA has created a MySQL database for us and we have saved our credential files. The script loads credential files saved locally as a .cnf file. Please find the following line of code, it should be located in the build_database.R and the notebook file. Amend this line with your credential file. 
+Repository contains a project built as a self contained notebook as well as R scripts individualized to run on cmd. Both Notebook files and .R files assume a DBA has created a MySQL database for us and we have saved our credential file. The script loads the credential file saved locally as a .cnf file. Please find the following line of code, it should be located in the build_database.R and the notebook file. Amend this line with your credential file. 
 
 db_credentials<-"C:\\Users\\justin\\Desktop\\xmedia.cnf"
 
