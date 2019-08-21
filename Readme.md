@@ -22,13 +22,8 @@ The build_databse.R script, executes a script which makes a request to the api, 
 
 
 ### Notebook file
-•	The notebook file is called api_request_project.rmd
-o	An HTML version of the notebook has been added as well
-•	Unlike the .R files, the windows functions simply print out a searchable datatable for their query results
-•	The notebook presents the code documented step by step
-•	One other major difference is that the notebook file doesn't overwrite a db if it already exists. As you can't really change the .R files, i decided to amend the .R script files table creation function.  The notebook file will refuse to overwrite, where the R script will overwrite by default.  
-•	The notebook file also includes a little EDA in R section and those graphs are stored on the git in the figure.html folder
+The notebook file is called api_request_project.rmd. An HTML version of the notebook has been added to the directory. The windows functions act differently in the notebook file. Instead of saving query results to CSV files the notebok prints the results using datatable package.	The notebook presents a documented step by step explanation for the code as well as more tables and graphs. One major functional difference is that the notebook file doesn't overwrite a db if it already exists. I decided to amend the .R script files table creation function.  The notebook file will refuse to overwrite a previous MYSQL table, where the R script will overwrite by default. The notebook file includes an EDA in R section and those graphs are stored on the git in the figure.html folder
 
 
-You can preview the html document [here](http://rpubs.com/justin_herman_42/521061)
+You can preview the html document [here](http://rpubs.com/justin_herman_42/521061) . It is the easiest way to explore this project.
 
