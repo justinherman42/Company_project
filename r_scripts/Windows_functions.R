@@ -33,8 +33,8 @@ yty_ranking <- function(statistic,table_name,partition=0){
         query <- paste("WITH Last_Year  AS (SELECT Company,Report_Date,",
                        statistic,", LAG(",statistic, ",4) OVER( PARTITION BY Company ORDER BY Report_Date) Last_Year_",statistic,
                        " FROM ",table_name," ),", statistic,"_table AS (SELECT Company,Report_Date,",statistic,
-                       ",Last_Year_",statistic,", ROUND((-1*Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,
-                       ",3) AS growth FROM Last_Year) SELECT *, (case when growth is not null then dense_rank() OVER ( ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")        ## Send query request and display result
+                       ",Last_Year_",statistic,", ROUND((Last_Year_",statistic,"-",statistic,")/Last_Year_",statistic,
+                       "*-1,3) AS growth FROM Last_Year) SELECT *, (case when growth is not null then dense_rank() OVER ( ORDER BY growth desc) end) AS ranked_growth FROM ",statistic,"_table;",sep="")        ## Send query request and display result
         print(" Query for Industry quarterly ranked windows Function"  )
         print(query)
         res <- dbGetQuery(my_conn,query)
