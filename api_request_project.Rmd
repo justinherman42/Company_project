@@ -744,7 +744,7 @@ geom_tile(aes(y =cum_sum_revenue_in_billions/2 ,
   transition_states(Report_date, 
                     transition_length = 2, state_length = 1) 
 
-animate(my_animation, 200, fps = 10, duration = 10, width = 800, height = 600, renderer = gifski_renderer("this.gif") )
+animate(my_animation, 200, fps = 10, duration = 25, width = 800, height = 600, renderer = gifski_renderer("animation/this.gif") )
 
 ```
 
