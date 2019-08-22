@@ -27,3 +27,9 @@ The notebook file is called api_request_project.rmd. An HTML version of the note
 
 You can preview the html document [here](http://rpubs.com/justin_herman_42/521061) . It is the easiest way to explore this project.
 
+
+For an example of a fun animation, below I created a revenue race between the banks with gganimate:
+
+![Bank_Race](animation/this.gif)
+
+
