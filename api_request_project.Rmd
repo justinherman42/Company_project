@@ -705,3 +705,74 @@ ggplot(negative_growth, aes(x = Report_date, y = growth, colour = company)) +
   ggtitle("Negative Growth Rates Only by Bank from 2009-20019")
 ```
 
+### Animated Cumulative Revenue Race
+
++ animation tracks cumulative revenue from 2009 through 2018.   
++ data is complete so no cartesian join was needed and I think its a cool way of visualizing campaign success.  
++ If we want to show a client how they have increased growth in some field versus the industry as a whole, this graph can show them where they started and the success and process of things we implemented to get them to where they are now relative to competitors .  
+
+```{r}
+
+library(plotly)
+library(gganimate)
+
+cumsum_revnue <- cumsum_revnue %>%
+  ungroup() %>% 
+  arrange(Report_date) %>% 
+  mutate(company= as.factor(company)) %>% 
+  filter(year(Report_date)<2019) %>% 
+  group_by(Report_date) %>%
+  mutate(ordering = min_rank(-cum_sum_revenue_in_billions * 1.0)) %>%
+  ungroup() 
+cumsum_revnue
+
+
+
+
+# animated  barplot Race for cumulative revenue:
+my_animation <- cumsum_revnue %>% 
+  ggplot( aes(x=ordering,group = company,fill=company)) + 
+#  geom_bar(stat='identity')+
+geom_tile(aes(y =cum_sum_revenue_in_billions/2 , 
+                height = cum_sum_revenue_in_billions,
+                width = 0.9), alpha = 0.9) +
+  geom_text(aes(y = cum_sum_revenue_in_billions, label = company), vjust = -0.5) +
+  # text in x-axis (requires clip = "off" in coord_cartesian)
+  geom_text(aes(y = 0, label = company), vjust = 2) +
+  ylab("Cumulative Revenue Race pre 2019") +
+  coord_cartesian(clip = "off", expand = FALSE) +
+  labs(title=paste("CUMULATIVE Revenue From  {closest_state}"), x = "") +
+  theme(plot.title = element_text(hjust = 1, size = 22),
+        axis.ticks.x = element_blank(),
+        axis.text.x  = element_blank()) + 
+  transition_states(Report_date, 
+                    transition_length = 2, state_length = 1) 
+
+animate(my_animation, 200, fps = 10, duration = 10, width = 800, height = 600, renderer = gifski_renderer("this.gif") )
+
+```
+
+```{r}
+
+# animated  barplot:
+my_animation <- weekly_donations %>% 
+  ggplot( aes(x=ordering,group = comm_id,fill=comm_id)) + 
+#  geom_bar(stat='identity')+
+geom_tile(aes(y =Money_Raised/2 , 
+                height = Money_Raised,
+                width = 0.9), alpha = 0.9) +
+  geom_text(aes(y = Money_Raised, label = comm_id), vjust = -0.5) +
+  # text in x-axis (requires clip = "off" in coord_cartesian)
+  geom_text(aes(y = 0, label = comm_id), vjust = 2) +
+  ylab("Cumulative Sum of Contributions") +
+  coord_cartesian(clip = "off", expand = FALSE) +
+  labs(title=paste("CUMULATIVE Contributions From ", graph_title, ' {closest_state}'), x = "") +
+  theme(plot.title = element_text(hjust = 1, size = 22),
+        axis.ticks.x = element_blank(),
+        axis.text.x  = element_blank()) + 
+  transition_states(Date, 
+                    transition_length = 2, state_length = 1) 
+
+animate(my_animation, 200, fps = 10, duration = 10, width = 800, height = 600, renderer = gifski_renderer(paste(filename,".gif",sep=""),loop = F ))
+```
+
